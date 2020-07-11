@@ -32,7 +32,7 @@
                     type="index"
                     label="序号"
                     width="60">
-                <template scope="scope"><span>{{scope.$index+(page - 1) * pageSize + 1}} </span></template>
+                <template scope="scope"><span>{{scope.$index+(page.currentPage - 1) * page.pageSize + 1}} </span></template>
             </el-table-column>
             <template v-for="(item,i) in head">
                 <template>
@@ -41,6 +41,7 @@
                             :label="item.label"
                             :width="item.width?item.width:''"
                             :key="i"
+                            :formatter="item.formatter"
                             show-overflow-tooltip>
                     </el-table-column>
                 </template>
@@ -82,12 +83,14 @@
                 queryParams:{},
                 tableData:[],
                 currentPage: 1,
-                page: 1,
-                pageSize: 10,
-                total: 0,
+                page:{
+                    currentPage: 1,
+                    pageSize: 10,
+                    total: 0
+                },
                 queryFlag: true, //用于防止同时触发@size-chang @current-change
                 currentRow: null,
-                singleSelection: '', //table单选
+                singleSelection: null, //table单选
                 multipleSelection: [],//多选
                 //属性table
                 defaultProps: {
@@ -103,22 +106,13 @@
         },
         methods: {
             handleSizeChange(val) {
-                console.log('每页 '+val+' 条');
-                this.currentPage = 1;
-                this.page = 1;
-                if(this.queryFlag){
-                    this.queryFlag = false;
-                    this.queryData(this.currentPage,val)
-                }
+                this.page.pageSize = val;
+                this.page.currentPage = 1;
+                this.queryData();
             },
             handleCurrentChange(val) {
-                console.log('当前页: '+val);
-                this.page = val;
-                this.currentPage = val;
-                if(this.queryFlag){
-                    this.queryFlag = false;
-                    this.queryData(val,this.pageSize)
-                }
+                this.page.currentPage = val;
+                this.queryData();
             },
             prevClick(){
                 this.currentPage = this.currentPage-1;
@@ -126,16 +120,11 @@
             nextClick(){
                 this.currentPage = this.currentPage+1;
             },
-            queryData(pageNum,pageSize){
+            queryData(){
+                this.singleSelection = null;
                 var params = this.queryParams;
-                if(null==pageNum){
-                    pageNum = this.currentPage;
-                }
-                if(null==pageSize){
-                    pageSize = this.pageSize;
-                }
-                params.pageSize = pageSize;
-                params.pageNum = pageNum;
+                params.pageSize = this.page.pageSize;
+                params.pageNum = this.page.currentPage;
                 axios
                     .get(this.url,{
                         params: params
@@ -166,15 +155,9 @@
             },
             handleSelectionChange(val) {
                 this.multipleSelection = val;
-            },
-            //组件调用方调用的
-            query(params){
-                this.queryParams=params;
-                this.queryData();
             }
         },
         mounted(){
-            this.queryData()
         }
     }
 </script>

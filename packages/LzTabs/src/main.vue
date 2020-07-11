@@ -33,7 +33,7 @@
         </div>
         <div class="tab-content">
             <div class="tab-pane" v-for="(item,index) in tabList" :key="index" :style="{'display':(item.id==activeId?'block':'none')}">
-                <iframe :src="item.url" class="tabs-frame" frameborder="0" :name="item.id" scrolling="auto"></iframe>
+                <iframe :src="item.url+'?authc=false'" class="tabs-frame" frameborder="0" :name="item.id" scrolling="auto"></iframe>
             </div>
         </div>
     </div>
